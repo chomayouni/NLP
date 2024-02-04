@@ -1,14 +1,3 @@
-"Your Honor, the courtroom is a crucible. In it we burn away irrelevancies until we are left with a pure product, the truth for all time. Now sooner or later, this man or others like him will succeed in replicating Commander Data. And the decision you reach here today will determine how we will regard this creation of our genius." ---Captain Picard
-"It will reveal the kind of a people we are, what he is destined to be. It will reach far beyond this courtroom and this one android. It could significantly redefine the boundaries of personal liberty and freedom, expanding them for some, savagely curtailing them for others. Are you prepared to condemn him and all who come after him to servitude and slavery? Your Honor, Starfleet was founded to seek out new life, well there it sits! Waiting."
-"You wanted a chance to make law. Well, here it is. Make it a good one.”
-"You don’t get to destroy who I am. You will go back to prison, and spend the rest of your miserable life in a cage, knowing, that you’ll never have Vanessa. That this city, rejected you. It BEAT you. I! BEAT YOU!" ---Daredevil
-"Good morning. In less than an hour, aircraft from here will join others from around the world. And you will be launching the largest aerial battle in this history of mankind." ---The President from independance day
-"that word should have new meaning for all of us today. We can't be consumed by our petty differences anymore." Mankind -- 
-"We will be united in our common interests. Perhaps its fate that today is the 4th of July, and you will once again be fighting for our freedom, not from tyranny, oppression, or persecution" -- but from annihilation.
-"We're fighting for our right to live, to exist. And should we win the day, the 4th of July will no longer be known as an American holiday, but as the day when the world declared in one voice:"
-"We will not go quietly into the night! We will not vanish without a fight!We're going to live on! We're going to survive! Today, we celebrate our Independence Day!"--- Moonknight
-"You know where I belong, punk? I belong with the decent and innocent folk who can't find a moment's peace, not in the streets, not in their own homes, so long as punks like you terrorize them. I belong with the persecuted."
-"I am Iron Man." - Tony Stark, Iron Man (2008)
 "With great power comes great responsibility." - Uncle Ben, Spider-Man (2002)
 "I'm just a girl, standing in front of a boy, asking him to love her." - Anna Scott, Notting Hill (1999)
 "I feel the need—the need for speed." - Maverick, Top Gun (1986)
@@ -111,3 +100,14 @@ It's not who I am underneath but what I do that defines me." ― Batman
 "I am the culmination of one man's dream. This is not ego, or vanity. But when Dr. Soong created me, he added to the substance of the universe"
 "If, by your experiments, I am destroyed, something unique, something wonderful will be lost. I cannot permit that. I must protect his dream"
 "Where are the calluses we doctors are supposed to grow over our feelings? Perhaps the good ones never get them" 
+"Your Honor, the courtroom is a crucible. In it we burn away irrelevancies until we are left with a pure product, the truth for all time. Now sooner or later, this man or others like him will succeed in replicating Commander Data. And the decision you reach here today will determine how we will regard this creation of our genius." ---Captain Picard
+"It will reveal the kind of a people we are, what he is destined to be. It will reach far beyond this courtroom and this one android. It could significantly redefine the boundaries of personal liberty and freedom, expanding them for some, savagely curtailing them for others. Are you prepared to condemn him and all who come after him to servitude and slavery? Your Honor, Starfleet was founded to seek out new life, well there it sits! Waiting."
+"You wanted a chance to make law. Well, here it is. Make it a good one.”
+"You don’t get to destroy who I am. You will go back to prison, and spend the rest of your miserable life in a cage, knowing, that you’ll never have Vanessa. That this city, rejected you. It BEAT you. I! BEAT YOU!" ---Daredevil
+"Good morning. In less than an hour, aircraft from here will join others from around the world. And you will be launching the largest aerial battle in this history of mankind." ---The President from independance day
+"that word should have new meaning for all of us today. We can't be consumed by our petty differences anymore." Mankind -- 
+"We will be united in our common interests. Perhaps its fate that today is the 4th of July, and you will once again be fighting for our freedom, not from tyranny, oppression, or persecution" -- but from annihilation.
+"We're fighting for our right to live, to exist. And should we win the day, the 4th of July will no longer be known as an American holiday, but as the day when the world declared in one voice:"
+"We will not go quietly into the night! We will not vanish without a fight!We're going to live on! We're going to survive! Today, we celebrate our Independence Day!"--- Moonknight
+"You know where I belong, punk? I belong with the decent and innocent folk who can't find a moment's peace, not in the streets, not in their own homes, so long as punks like you terrorize them. I belong with the persecuted."
+"I am Iron Man." - Tony Stark, Iron Man (2008)
