@@ -9,15 +9,14 @@ import sys
 import math
 import gensim
 import matplotlib.pyplot as plt
+import csv
 
-from collections import defaultdict
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from gensim.models import TfidfModel
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
 from pathlib import Path
-from gensim.models import LdaModel
 from gensim.corpora import Dictionary
 
 from wordcloud import WordCloud
@@ -74,40 +73,71 @@ def setup_lda(documents, num_topics):
     # this is essentially a list that contains the number of times a word appears in the training set
     documents = [word_tokenize(doc) for doc in documents]
     id2word = Dictionary(documents)
-    count = 0
-    for k, v in list(id2word.items()):
-        print(k, v, dict(id2word.dfs)[k]) #.dfs is the document frequency for each word
-        count += 1
-        if count > 10:
-            break
-    # Filter out words that occur less than 5 documents, or more than 50% of the documents
+    # count = 0
+    # for k, v in list(id2word.items()):
+    #     print(k, v, dict(id2word.dfs)[k]) #.dfs is the document frequency for each word
+    #     count += 1
+    #     if count > 10:
+    #         break
+    # Filter out words that occur less than 2 documents, or more than 50% of the documents
     id2word.filter_extremes(no_below=2, no_above=0.5)
 
     # Convert documents into a document-term matrix
     corpus_lda_bow = [id2word.doc2bow(doc) for doc in documents]
 
+    # Create a TF-IDF model and apply it to the corpus
+    tfidf_model = TfidfModel(corpus_lda_bow)
+    corpus_tfidf = tfidf_model[corpus_lda_bow]
     last_index = len(id2word) - 1
-    print(id2word[last_index])
+    # print(id2word[last_index])
 
     for i in range(len(corpus_lda_bow)):
         for word_id, freq in corpus_lda_bow[i]:
             print("word {} (\"{}\") appears {} time.".format(word_id, id2word[word_id], freq))
     bow = corpus_lda_bow[last_index]
 
-     # Build the LDA model
+     # Build the LDA models for comparison
     lda_model = gensim.models.LdaMulticore(corpus=corpus_lda_bow, id2word=id2word, num_topics=num_topics, passes=2, workers=2)
+    lda_model_tfidf = gensim.models.LdaMulticore(corpus=corpus_tfidf, id2word=id2word, num_topics=num_topics, passes=2, workers=4)
     
     for idx, topic in lda_model.print_topics(-1):
         print("Topic: {} \nWords: {}".format(idx, topic))
+    print()
+
+    for idx, topic in lda_model_tfidf.print_topics(-1):
+        print("Topic: {} Word: {}".format(idx, topic))
     print()
 
     for index, score in sorted(lda_model[bow], key=lambda tup: -1*tup[1]):
         print("Score: {}\t Topic: {}".format(score, lda_model.print_topic(index, 5)))
     print()
 
+    for index, score in sorted(lda_model_tfidf[bow], key=lambda tup: -1*tup[1]):
+        print("Score: {}\t Topic: {}".format(score, lda_model_tfidf.print_topic(index, 5)))
+    print()
+
+    with open('lda_topics.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Model", "Topic ID", "Words"])
+
+        for idx, topic in lda_model.print_topics(-1):
+            writer.writerow(["BoW", idx, topic])
+
+        for idx, topic in lda_model_tfidf.print_topics(-1):
+            writer.writerow(["TF-IDF", idx, topic])
+
+    with open('lda_scores.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Model", "Score", "Topic"])
+
+        for index, score in sorted(lda_model[bow], key=lambda tup: -1*tup[1]):
+            writer.writerow(["BoW", score, lda_model.print_topic(index, 5)])
+
+        for index, score in sorted(lda_model_tfidf[bow], key=lambda tup: -1*tup[1]):
+            writer.writerow(["TF-IDF", score, lda_model_tfidf.print_topic(index, 5)])
+
     # Calculate grid size
     grid_size = math.ceil(math.sqrt(lda_model.num_topics))
-
     fig, axs = plt.subplots(grid_size, grid_size, figsize=(20, 20))
 
     # Generate word clouds for each topic
@@ -122,8 +152,28 @@ def setup_lda(documents, num_topics):
         for t in range(lda_model.num_topics, grid_size * grid_size):
             fig.delaxes(axs.flatten()[t])
 
+    # Calculate grid size
+    grid_size = math.ceil(math.sqrt(lda_model_tfidf.num_topics))
+
+    fig, axs = plt.subplots(grid_size, grid_size, figsize=(20, 20))
+
+    # Generate word clouds for each topic
+    for t in range(lda_model_tfidf.num_topics):
+        ax = axs[t//grid_size, t%grid_size]
+        ax.imshow(WordCloud().fit_words(dict(lda_model_tfidf.show_topic(t, 200))))
+        ax.axis("off")
+        ax.set_title("Topic #" + str(t))
+
+    # Remove unused subplots
+    if lda_model_tfidf.num_topics < grid_size * grid_size:
+        for t in range(lda_model_tfidf.num_topics, grid_size * grid_size):
+            fig.delaxes(axs.flatten()[t])
+
     plt.tight_layout()
     plt.show()
+
+
+    #-------The graphs below were generated using github copilot-------
     import pandas as pd
     import seaborn as sns
 

@@ -6,9 +6,6 @@ import argparse
 import string
 import numpy as np
 import sys
-import math
-import gensim
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from collections import defaultdict
@@ -16,12 +13,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
-from nltk.tokenize import word_tokenize
 from pathlib import Path
-from gensim.models import LdaModel
-from gensim.corpora import Dictionary
-
-from wordcloud import WordCloud
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -129,130 +121,6 @@ def calculate_naive_bayes(hero_bow, villain_bow, total_hero_words, total_villain
 
     return hero_word_prob, villain_word_prob
 
-def setup_lda(documents, num_topics):
-    # I was having a tone of difficulty with the LDA model, so I used the following resources to help me:
-    # https://www.youtube.com/watch?v=Y79sCtzddyA
-
-    # Create a dictionary from the documents
-    # this is essentially a list that contains the number of times a word appears in the training set
-    documents = [word_tokenize(doc) for doc in documents]
-    id2word = Dictionary(documents)
-    count = 0
-    for k, v in list(id2word.items()):
-        print(k, v, dict(id2word.dfs)[k]) #.dfs is the document frequency for each word
-        count += 1
-        if count > 10:
-            break
-    # Filter out words that occur less than 5 documents, or more than 50% of the documents
-    id2word.filter_extremes(no_below=2, no_above=0.5)
-
-    # Convert documents into a document-term matrix
-    corpus_lda_bow = [id2word.doc2bow(doc) for doc in documents]
-
-    last_index = len(id2word) - 1
-    print(id2word[last_index])
-
-    for i in range(len(corpus_lda_bow)):
-        for word_id, freq in corpus_lda_bow[i]:
-            print("word {} (\"{}\") appears {} time.".format(word_id, id2word[word_id], freq))
-    bow = corpus_lda_bow[last_index]
-
-     # Build the LDA model
-    lda_model = gensim.models.LdaMulticore(corpus=corpus_lda_bow, id2word=id2word, num_topics=num_topics, passes=2, workers=2)
-    
-    for idx, topic in lda_model.print_topics(-1):
-        print("Topic: {} \nWords: {}".format(idx, topic))
-    print()
-
-    for index, score in sorted(lda_model[bow], key=lambda tup: -1*tup[1]):
-        print("Score: {}\t Topic: {}".format(score, lda_model.print_topic(index, 5)))
-    print()
-
-    # Calculate grid size
-    grid_size = math.ceil(math.sqrt(lda_model.num_topics))
-
-    fig, axs = plt.subplots(grid_size, grid_size, figsize=(20, 20))
-
-    # Generate word clouds for each topic
-    for t in range(lda_model.num_topics):
-        ax = axs[t//grid_size, t%grid_size]
-        ax.imshow(WordCloud().fit_words(dict(lda_model.show_topic(t, 200))))
-        ax.axis("off")
-        ax.set_title("Topic #" + str(t))
-
-    # Remove unused subplots
-    if lda_model.num_topics < grid_size * grid_size:
-        for t in range(lda_model.num_topics, grid_size * grid_size):
-            fig.delaxes(axs.flatten()[t])
-
-    plt.tight_layout()
-    plt.show()
-    import pandas as pd
-    import seaborn as sns
-
-    # Create a DataFrame with zeros
-    df = pd.DataFrame(0, index=range(len(corpus_lda_bow)), columns=[id2word[i] for i in range(len(id2word))])
-
-    # Fill the DataFrame with word frequencies
-    for doc_id, doc in enumerate(corpus_lda_bow):
-        for word_id, freq in doc:
-            df.at[doc_id, id2word[word_id]] = freq
-
-    # Plot the heatmap
-    plt.figure(figsize=(10, 10))
-    sns.heatmap(df, cmap="YlGnBu")
-    plt.show()
-
-
-    # Number of words to display per topic
-    num_words = 10
-
-    # Calculate the number of rows and columns for the subplots
-    num_topics = lda_model.num_topics
-    cols = int(np.sqrt(num_topics))
-    rows = num_topics // cols 
-    rows += num_topics % cols
-
-    # Create a new figure for the plots
-    fig, axes = plt.subplots(rows, cols, figsize=(20, 20))
-
-    # Ensure axes is a 2-dimensional array
-    if rows == 1:
-        axes = axes[np.newaxis, :]
-    elif cols == 1:
-        axes = axes[:, np.newaxis]
-
-    # For each topic
-    for idx, topic in enumerate(lda_model.print_topics(-1)):
-        # Get the top words in the topic
-        top_words = lda_model.show_topic(idx, num_words)
-        
-        # Separate the words and their weights into two lists
-        words, weights = zip(*top_words)
-        
-        # Get the current axis
-        ax = axes[idx // cols, idx % cols]
-        
-        # Create a bar chart on the current axis
-        ax.barh(range(num_words), weights, tick_label=words)
-        
-        # Invert the y-axis so the words are displayed top-to-bottom
-        ax.invert_yaxis()
-        
-        # Add a title
-        ax.set_title(f"Topic {idx}")
-
-    # Remove unused subplots
-    if num_topics < rows * cols:
-        for idx in range(num_topics, rows * cols):
-            fig.delaxes(axes.flatten()[idx])
-
-    # Show the plots
-    plt.tight_layout()
-    plt.show()
-
-
-    return lda_model, corpus_lda_bow, id2word
 
 def main():
     # Create a parser
@@ -303,59 +171,42 @@ def main():
         print(f"Log prior probability of Hero: {np.log(len(hero_quotes) / (len(hero_quotes) + len(villain_quotes)))}")
         print(f"Log prior probability of Villain: {np.log(len(villain_quotes) / (len(hero_quotes) + len(villain_quotes)))}")
 
-        # Create the first DataFrame
-        df1 = pd.DataFrame({
-            'Category': ['Hero', 'Villain'],
-            'Number of Documents': [hero_docs, villain_docs],
-            'Average Number of Tokens per Document': [avg_hero_tokens, avg_villain_tokens]
-        })
-
         # Create the second DataFrame
-        df2 = pd.DataFrame({
+        df = pd.DataFrame({
             'Category': ['Hero', 'Villain', 'Total'],
             'Number of Quotes': [len(hero_quotes), len(villain_quotes), len(hero_quotes) + len(villain_quotes)],
             'Number of Tokens': [total_hero_words, total_villain_words, total_hero_words + total_villain_words],
-            'Number of Types': [len(set(hero_quotes)), len(set(villain_quotes)), total_words]
+            'Number of Types': [len(set(hero_quotes)), len(set(villain_quotes)), total_words],
+            'Average Number of Tokens per Document': [avg_hero_tokens, avg_villain_tokens, (total_hero_words + total_villain_words) / (len(hero_quotes) + len(villain_quotes))],
         })
-
-        # Append df2 to df1
-        df = pd.concat([df1, df2], ignore_index=True)
 
         # Save the DataFrame to a CSV file
         df.to_csv('data_statistics.csv', index=False)
 
         print(df)
         print()
-
+    
         # theses are for testing the values of the log likelihood ratios
         # Print the log likelihood ratios for the first 5 words in the vocabulary
         for word in vocabulary[:5]:
             print(f"Log likelihood ratio of {word} for Hero: {hero_word_prob[word] - villain_word_prob[word]}")
             print(f"Log likelihood ratio of {word} for Villain: {villain_word_prob[word] - hero_word_prob[word]}")
-        
+        print()
+
         # Print the log likelihood ratios for the last 5 words in the vocabulary
         for word in vocabulary[-5:]:
             print(f"Log likelihood ratio of {word} for Hero: {hero_word_prob[word] - villain_word_prob[word]}")
             print(f"Log likelihood ratio of {word} for Villain: {villain_word_prob[word] - hero_word_prob[word]}")
-        
+        print()
+
         # Print the log likelihood ratios for 5 random words in the vocabulary
         for word in np.random.choice(vocabulary, 5):
             print(f"Log likelihood ratio of {word} for Hero: {hero_word_prob[word] - villain_word_prob[word]}")
             print(f"Log likelihood ratio of {word} for Villain: {villain_word_prob[word] - hero_word_prob[word]}")
-
+        print()
+        
         print(bag_of_words_matrix)
 
-        #----------------LDAModel----------------
-        # Define the number of topics and the specific words
-        # Combine hero and villain quotes into one list of documents
-        # documents = [nltk.word_tokenize(quote) for quote in hero_quotes + villain_quotes]
-        documents = hero_quotes + villain_quotes
-        # Set up the LDA model
-        lda_model, corpus, id2word = setup_lda(documents, num_topics=2)
-        # Print the topics
-        topics = lda_model.print_topics()
-        for topic in tqdm.tqdm(topics, desc="printing topics"):
-            print(topic)
        
 
 
