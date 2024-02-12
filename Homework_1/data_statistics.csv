@@ -1,0 +1,6 @@
+Category,Number of Documents,Average Number of Tokens per Document,Number of Quotes,Number of Tokens,Number of Types
+Hero,110.0,5.090909090909091,,,
+Villain,210.0,2.933333333333333,,,
+Hero,,,110.0,560.0,106.0
+Villain,,,210.0,616.0,189.0
+Total,,,320.0,1176.0,927.0

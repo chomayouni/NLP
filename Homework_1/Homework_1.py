@@ -9,6 +9,7 @@ import sys
 import math
 import gensim
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from collections import defaultdict
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -93,7 +94,13 @@ def setup_naive_bayes(hero_quotes, villain_quotes, data_type='count'):
     total_villain_words = np.sum(villain_bow)
     total_words = len(vocabulary)
 
-    return hero_bow, villain_bow, total_hero_words, total_villain_words, total_words, vocabulary, vectorizer, bag_of_words_matrix
+    # Calculate the number of documents and the average number of tokens per document for each category
+    hero_docs = len(hero_quotes)
+    villain_docs = len(villain_quotes)
+    avg_hero_tokens = total_hero_words / hero_docs
+    avg_villain_tokens = total_villain_words / villain_docs
+
+    return hero_bow, villain_bow, total_hero_words, total_villain_words, total_words, vocabulary, vectorizer, bag_of_words_matrix, hero_docs, villain_docs, avg_hero_tokens, avg_villain_tokens
 
 def calculate_naive_bayes(hero_bow, villain_bow, total_hero_words, total_villain_words, total_words, vocabulary, vectorizer):
 
@@ -283,7 +290,7 @@ def main():
 
         #----------------NaiveBayes----------------
         # Train the Naive Bayes model
-        hero_bow, villain_bow, total_hero_words, total_villain_words, total_words, vocabulary, vectorizer, bag_of_words_matrix = setup_naive_bayes(hero_quotes, villain_quotes, data_type=args.data_type)
+        hero_bow, villain_bow, total_hero_words, total_villain_words, total_words, vocabulary, vectorizer, bag_of_words_matrix, hero_docs, villain_docs, avg_hero_tokens, avg_villain_tokens = setup_naive_bayes(hero_quotes, villain_quotes)
         hero_word_prob, villain_word_prob = calculate_naive_bayes(hero_bow, villain_bow, total_hero_words, total_villain_words, total_words, vocabulary, vectorizer)
 
         # Print the stats for the dataset
@@ -295,6 +302,30 @@ def main():
         # Print the log prior probabilities
         print(f"Log prior probability of Hero: {np.log(len(hero_quotes) / (len(hero_quotes) + len(villain_quotes)))}")
         print(f"Log prior probability of Villain: {np.log(len(villain_quotes) / (len(hero_quotes) + len(villain_quotes)))}")
+
+        # Create the first DataFrame
+        df1 = pd.DataFrame({
+            'Category': ['Hero', 'Villain'],
+            'Number of Documents': [hero_docs, villain_docs],
+            'Average Number of Tokens per Document': [avg_hero_tokens, avg_villain_tokens]
+        })
+
+        # Create the second DataFrame
+        df2 = pd.DataFrame({
+            'Category': ['Hero', 'Villain', 'Total'],
+            'Number of Quotes': [len(hero_quotes), len(villain_quotes), len(hero_quotes) + len(villain_quotes)],
+            'Number of Tokens': [total_hero_words, total_villain_words, total_hero_words + total_villain_words],
+            'Number of Types': [len(set(hero_quotes)), len(set(villain_quotes)), total_words]
+        })
+
+        # Append df2 to df1
+        df = pd.concat([df1, df2], ignore_index=True)
+
+        # Save the DataFrame to a CSV file
+        df.to_csv('data_statistics.csv', index=False)
+
+        print(df)
+        print()
 
         # theses are for testing the values of the log likelihood ratios
         # Print the log likelihood ratios for the first 5 words in the vocabulary
